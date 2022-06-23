@@ -300,3 +300,99 @@ insert into PEDIDO_TEM_SAPATO(referencia_sapato, n_pedido) values(527, 584),
 (470, 218),
 (340, 527),
 (263, 281);
+
+-- PESQUISAS EM SQL DA 4 PARTE DO TRABALHO
+
+-- Selecionar todos os Pedidos que usam o componente 'Sola Lion' em sua construção
+select P.n_pedido
+from PEDIDO P, PEDIDO_TEM_SAPATO PS, SAPATO S
+where P.n_pedido = PS.n_pedido
+and S.referencia = PS.referencia_sapato
+and S.referencia in (select SC.referencia_sapato
+						from SAPATO_TEM_COMPONENTES SC, COMPONENTES C
+                        where SC.referencia_componentes = C.referencia
+                        and C.nome = "Sola Lion");
+                        
+-- Encontrar os Cliente que fizeram aomenos um pedido ou sao atendidos pelo vendedor 'Breno Beiriz Dias'
+select C.nome
+from CLIENTE C, PEDIDO P
+where C.cnpj = P.cnpj_cliente
+group by C.cnpj
+having count(*) >= 1
+union
+select C1.nome
+from CLIENTE C1, VENDEDOR V, FUNCIONARIO F
+where C1.cpf_vendedor = V.cpf
+and V.cpf = F.cpf
+and F.nome = "Breno Beiriz Dias";
+
+-- Encontrar referencia dos sapatos feitos pelo modelista com salario hora maior que 6.00 reais
+select S.referencia
+from SAPATO S
+where S.cpf_modelista in(select M.cpf
+							from MODELISTA M
+							where M.salario_hora > 6.00);
+                            
+-- selecionar todos os clientes que nao fizerem pedidos
+select C.nome
+from CLIENTE C
+where C.cnpj not in(select P.cnpj_cliente
+					from PEDIDO P);
+                    
+-- Selecionar os cartorios aonde as notas de duplicatas são de pedidos do CLIENTE 'Radames'
+select C.nome
+from CARTORIO C
+where C.nome in (select N.nome_cartorio
+					from NOTA_DUPLICATA N
+                    where N.n_duplicata in (select P.n_duplicata
+												from PEDIDO P, CLIENTE C1
+												where P.cnpj_cliente = C1.cnpj
+                                                and C1.nome = 'Radames'));
+
+-- selecionar os valores todos os boletos do referentes a produção do sapato 481
+select  B.valor
+from BOLETO B
+where B.n_boleto in (select N.n_boleto
+						from NOTA_DUPLICATA N, PEDIDO P
+                        where N.n_duplicata = P.n_duplicata
+                        and P.n_pedido in (select PS.n_pedido
+											from PEDIDO_TEM_SAPATO PS
+                                            where PS.referencia_sapato = 481));
+                                            
+-- selecionar o salario dos funcionarios que produzem a os pedidos do WindFour
+select P.salario_mensal
+from PRODUCAO P
+where P.cpf in (select PP.cpf_producao
+				from FUN_PRODUCAO_PRODUZ_PEDIDO PP, PEDIDO P1
+                where P1.cnpj_cliente in (select C.cnpj
+											from CLIENTE C
+                                            where C.nome = 'WindFour'));
+                                            
+-- selecionar a media mensal dos venderes que tem pedidos em carteira (ou sej pedidos existentes no sistema)
+select avg(V.combustivel_mensal)
+from VENDEDOR V
+where V.cpf in (select P.cpf_vendedor
+				from PEDIDO P);
+                
+-- selecionar todos PEDIDOS que possuem sapatos de Modelistas do estilo 'Grife-Feminino' ou 'Classico-Femino'
+select P.n_pedido
+from PEDIDO P
+where P.n_pedido in (select PS.n_pedido
+						from PEDIDO_TEM_SAPATO PS, SAPATO S
+                        where PS.referencia_sapato = S.referencia
+                        and cpf_modelista in (select M.cpf
+												from MODELISTA M
+                                                where M.estilo_criacao = "Grife-Feminino" or M.estilo_criacao = "Classico-Femino"));
+
+-- Encontrar os componentes dos sapatos encontrados nos pedidos feitos pelo cliente 'JJACOMET'
+select C.nome
+from COMPONENTES C
+where C.referencia in (select SC.referencia_componentes
+						from SAPATO_TEM_COMPONENTES SC, SAPATO S
+                        where SC.referencia_sapato = S.referencia
+                        and S.referencia in (select PS.referencia_sapato
+												from PEDIDO_TEM_SAPATO PS, PEDIDO P, CLIENTE C
+                                                where PS.n_pedido = P.n_pedido
+                                                and P.cnpj_cliente = C.cnpj
+                                                and C.nome  = "JJACOMET"));
+                            
