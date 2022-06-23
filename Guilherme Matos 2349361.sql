@@ -301,8 +301,6 @@ insert into PEDIDO_TEM_SAPATO(referencia_sapato, n_pedido) values(527, 584),
 (340, 527),
 (263, 281);
 
--- PESQUISAS EM SQL DA 4 PARTE DO TRABALHO
-
 -- Selecionar todos os Pedidos que usam o componente 'Sola Lion' em sua construção
 select P.n_pedido
 from PEDIDO P, PEDIDO_TEM_SAPATO PS, SAPATO S
